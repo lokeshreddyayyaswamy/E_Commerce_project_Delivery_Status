@@ -6,36 +6,35 @@ from sklearn.preprocessing import MinMaxScaler
 # Streamlit app title
 st.title("E-Commerce Shipment Delivery Prediction")
 
-# Load the saved model and scaler
-model = joblib.load('shipment_delivery_model.pkl')
-scaler = joblib.load('scaler.pkl')  # Ensure this is the correctly fitted scaler file
+# Load the model and scaler
+try:
+    model = joblib.load('shipment_delivery_model.pkl')
+    scaler = joblib.load('scaler.pkl')
+except FileNotFoundError:
+    st.error("Model or scaler file not found. Please ensure 'shipment_delivery_model.pkl' and 'scaler.pkl' are in the working directory.")
+    st.stop()
+except Exception as e:
+    st.error(f"Error loading model/scaler: {e}")
+    st.stop()
 
-# Main content layout
-st.write("### Enter Input Features for Prediction")
+# Create two columns for input fields
+col1, col2 = st.columns(2)
 
-# Input fields for user
-warehouse_block = st.selectbox(
-    'Warehouse Block (0=A, 1=B, 2=C, 3=D, 4=F)', 
-    options=[0, 1, 2, 3, 4]
-)
-mode_of_shipment = st.selectbox(
-    'Mode of Shipment (0=Flight, 1=Road, 2=Ship)', 
-    options=[0, 1, 2]
-)
-customer_care_calls = st.text_input('Customer Care Calls (Number)')
-customer_rating = st.text_input('Customer Rating (1 to 5)')
-cost_of_product = st.text_input('Cost of the Product ($)')
-prior_purchases = st.text_input('Prior Purchases (Number)')
-product_importance = st.selectbox(
-    'Product Importance (0=High, 1=Low, 2=Medium)', 
-    options=[0, 1, 2]
-)
-gender = st.selectbox(
-    'Gender (0=Female, 1=Male)', 
-    options=[0, 1]
-)
-discount_offered = st.text_input('Discount Offered ($)')
-weight_in_gms = st.text_input('Weight in grams')
+# Input fields for user in the left column
+with col1:
+    warehouse_block = st.selectbox('Warehouse Block (0=A, 1=B, 2=C, 3=D, 4=F)', options=[0, 1, 2, 3, 4])
+    mode_of_shipment = st.selectbox('Mode of Shipment (0=Flight, 1=Road, 2=Ship)', options=[0, 1, 2])
+    customer_care_calls = st.text_input('Customer Care Calls (Number)')
+    customer_rating = st.text_input('Customer Rating (1 to 5)')
+    cost_of_product = st.text_input('Cost of the Product ($)')
+
+# Input fields for user in the right column
+with col2:
+    prior_purchases = st.text_input('Prior Purchases (Number)')
+    product_importance = st.selectbox('Product Importance (0=High, 1=Low, 2=Medium)', options=[0, 1, 2])
+    gender = st.selectbox('Gender (0=Female, 1=Male)', options=[0, 1])
+    discount_offered = st.text_input('Discount Offered ($)')
+    weight_in_gms = st.text_input('Weight in grams')
 
 # Validate inputs
 try:
@@ -87,7 +86,6 @@ if st.button('Predict'):
     try:
         # Make prediction
         prediction = model.predict(input_data)
-        # Display the prediction result
         st.write(f"## Predicted Delivery Status: {'On Time' if prediction[0] == 0 else 'Not On Time'}")
     except Exception as e:
         st.error(f"Error during prediction: {e}")
